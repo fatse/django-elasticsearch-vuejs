@@ -1,0 +1,137 @@
+{% extends 'django_elastico_vuejs/base.html' %}
+
+{% block content %}
+    <div id="article">
+        <div id="add-article">
+            <h3>Add Article</h3>
+            <div class="form-row">
+                <div class="col">
+                    <label>Title</label>
+                    <input type="text" v-model="article_form.title" class="form-control">
+                </div>
+                <div class="col">
+                    <label>Body</label>
+                    <input type="text" v-model="article_form.body" class="form-control">
+                </div>
+                <div class="col">
+                    <label>Tags</label>
+                    <input type="text" v-model="article_form.tags_input" class="form-control">
+                </div>
+            </div>
+            <br>
+            <div>
+                <button @click="addStory()" class="btn btn-outline-primary">
+                    Add Story
+                </button>
+            </div>
+        </div>
+
+        <br>
+        <br>
+
+        <div id="search-section">
+            <h3>Article Results</h3>
+            <div class="form-row">
+                <div class="col">
+                    <label>Search</label>
+                    <input type="text" v-model="search_form.search_input" class="form-control">
+                </div>
+            </div>
+
+            <br>
+
+            <div id="search-article">
+                <div>
+                    <button @click="searchStory()" class="btn btn-outline-primary">Search Story</button>
+                </div>
+            </div>
+
+            <div>
+                <div v-for="result in search_results">
+                    <div>
+                        <h3>[[result.title]]</h3>
+                        <p>[[result.body]]</p>
+                        <span v-for="tag in result.tags">
+                        [[tag]]
+                    </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        axios.defaults.xsrfHeaderName = "X-CSRFToken";
+        axios.defaults.xsrfCookieName = 'XSRF-TOKEN';
+
+        var url = "";
+        var vm = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#article',
+            data() {
+                return {
+                    article_form: {
+                        title: "",
+                        body: "",
+                        tags_input: ""
+                    },
+                    search_form: {
+                        search_input: ""
+                    },
+                    search_results: []
+                }
+            },
+            methods: {
+                getTags: function () {
+                    return this.article_form.tags_input.split(",");
+                },
+                sanitizeInput: function () {
+                    let input = JSON.parse(JSON.stringify(this.article_form));
+                    input.tags = this.getTags();
+
+                    delete input.tags_input;
+
+                    return input;
+                },
+                addStory: function () {
+                    let input = this.sanitizeInput();
+                    axios.post('/api/stories/',
+                        input,
+                        {
+                            headers: {
+                                'Content-type': 'application/json'
+                            }
+                        })
+                        .then(console.log("Success!"))
+                        .then(_ => this.resetSearch())
+                        .then(() => this.search_results.push(input));
+                },
+                searchStory: function () {
+                    this.searchStories(this.search_form);
+                },
+                searchStories: function (searchInput) {
+                    axios.post('/api/stories/searchV2/',
+                        searchInput,
+                        {
+                            headers: {
+                                'Content-type': 'application/json'
+                            }
+                        }).then(response => {
+                        this.search_results = response.data;
+                        console.log(this.search_results);
+                    }).catch(err => console.log(err))
+                },
+                listStories: function () {
+                    let input = {};
+                    this.searchStories(input);
+                },
+                resetSearch: function () {
+                    Vue.set(this.$data.search_form, "search_input", "");
+                }
+            },
+            created: function () {
+                this.listStories();
+            }
+        });
+    </script>
+{% endblock content %}
