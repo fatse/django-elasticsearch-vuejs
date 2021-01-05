@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import AddStory, SearchStory, Articles, SearchStoryV2
+from .views import AddArticle, SearchArticle, Articles, SearchArticleV2
 
 urlpatterns = [
-    path('api/stories/', AddStory.as_view(), name="add-story"),
-    path('api/stories/search/', SearchStory.as_view(), name="search-story"),
-    path('api/stories/searchV2/', SearchStoryV2.as_view(), name="search-story"),
+    path('api/articles/', AddArticle.as_view(), name="add-articles"),
+    path('api/articles/search/', SearchArticle.as_view(), name="search-articles"),
+    path('api/articles/searchV2/', SearchArticleV2.as_view(), name="search-articles"),
     path('', Articles.as_view(), name="articles")
 ]

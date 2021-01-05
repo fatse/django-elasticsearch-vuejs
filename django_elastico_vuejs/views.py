@@ -14,7 +14,16 @@ init_es()
 client = Elasticsearch()
 
 
-class AddStory(APIView):
+class Articles(TemplateView):
+    template_name = 'django_elastico_vuejs/articles.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        return context
+
+
+class AddArticle(APIView):
     def post(self, request):
         serializer = ArticleRequestSerializer(data=request.data)
         serializer.is_valid()
@@ -29,7 +38,7 @@ class AddStory(APIView):
         return Response(data="success", status=status.HTTP_200_OK)
 
 
-class SearchStory(APIView):
+class SearchArticle(APIView):
     def post(self, request):
         serializer = SearchArticleRequestSerializer(data=request.data)
         serializer.is_valid()
@@ -50,7 +59,7 @@ class SearchStory(APIView):
         return execute_search(query)
 
 
-class SearchStoryV2(APIView):
+class SearchArticleV2(APIView):
     def post(self, request):
         serializer = SearchArticleRequestSerializer(data=request.data)
         serializer.is_valid()
@@ -66,15 +75,6 @@ class SearchStoryV2(APIView):
             query |= Q("terms", tags=[search_request.search_input])
 
         return execute_search(query)
-
-
-class Articles(TemplateView):
-    template_name = 'django_elastico_vuejs/articles.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        return context
 
 
 def execute_search(query):
